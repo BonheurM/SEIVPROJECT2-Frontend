@@ -2,7 +2,7 @@
 import ocLogo from "/oc-logo-white.png";
 import { ref, onMounted } from "vue";
 
-const title = ref("Tutorials");
+const title = ref("Course Listing System");
 
 const name = ref("");
 const logoURL = ref("");
@@ -29,9 +29,14 @@ onMounted(() => {
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
-      <div >
-        <v-btn class="mx-2" :to="{ name: 'tutorials' }"> List </v-btn>
-        <v-btn class="mx-2" :to="{ name: 'add' }"> Add Tutorial </v-btn>
+      <div>
+        <!-- New Course Search Link -->
+        <v-btn class="mx-2" :to="{ name: 'courses' }" color="primary">
+          Course Search
+        </v-btn>
+        <!-- Keep tutorial links temporarily -->
+        <v-btn class="mx-2" :to="{ name: 'tutorials' }" text> Tutorials </v-btn>
+        <v-btn class="mx-2" :to="{ name: 'add' }" text> Add Tutorial </v-btn>
       </div>
 
     </v-app-bar>
