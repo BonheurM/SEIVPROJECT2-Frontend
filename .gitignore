@@ -50,4 +50,4 @@ Thumbs.db
 .yarn-integrity
 
 # Documentation
-*.md
+# Keep project documentation in version control
