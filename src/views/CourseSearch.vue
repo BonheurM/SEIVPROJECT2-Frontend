@@ -1,46 +1,38 @@
 <script setup>
 import { ref } from "vue";
-// import CourseServices from "../services/courseServices"; // To be implemented
+import CourseServices from "../services/courseServices";
 
 const searchQuery = ref("");
 const courses = ref([]);
 const loading = ref(false);
 const message = ref("");
+const touched = ref(false);
+
+const validateDept = (v) => /^[A-Za-z]{2,4}$/.test(String(v).trim());
 
 const searchCourses = async () => {
-  if (searchQuery.value.length < 2 || searchQuery.value.length > 4) {
-    message.value = "Please enter a department code (2-4 characters)";
+  touched.value = true;
+
+  if (!validateDept(searchQuery.value)) {
+    message.value = "Please enter a department code (2–4 letters, e.g., CS, MATH).";
+    courses.value = [];
     return;
   }
 
   loading.value = true;
   message.value = "";
-  
+
   try {
-    // TODO: Implement actual API call
-    // const response = await CourseServices.searchByDepartment(searchQuery.value);
-    // courses.value = response.data;
-    
-    // Placeholder data for now
-    courses.value = [
-      {
-        id: 1,
-        department: searchQuery.value.toUpperCase(),
-        number: "101",
-        title: "Introduction to " + searchQuery.value.toUpperCase(),
-        credits: 3,
-        instructor: "Dr. Smith"
-      }
-    ];
-    
-    if (courses.value.length === 0) {
-      message.value = `No courses found for "${searchQuery.value}"`;
-    } else {
-      message.value = `Showing ${courses.value.length} results for "${searchQuery.value}"`;
-    }
+    const data = await CourseServices.searchByDepartment(searchQuery.value);
+    courses.value = Array.isArray(data) ? data : [];
+
+    message.value = courses.value.length
+      ? `Showing ${courses.value.length} result${courses.value.length > 1 ? "s" : ""} for "${searchQuery.value.toUpperCase()}"`
+      : `No courses found for "${searchQuery.value.toUpperCase()}"`;
   } catch (error) {
-    message.value = "Error searching courses. Please try again.";
     console.error("Search error:", error);
+    courses.value = [];
+    message.value = error.message || "Error searching courses. Please try again.";
   } finally {
     loading.value = false;
   }
@@ -53,21 +45,30 @@ const searchCourses = async () => {
     <v-row>
       <v-col cols="12" md="8" class="mx-auto">
         <v-card class="pa-4" elevation="2">
-          <v-card-title class="text-h5 text-primary">
-            Course Search
-          </v-card-title>
+          <v-card-title class="text-h5 text-primary">Course Search</v-card-title>
+
           <v-card-text>
             <v-text-field
               v-model="searchQuery"
               label="Search by Department Code (e.g., CS, MATH, ENG)"
               variant="outlined"
               append-inner-icon="mdi-magnify"
+              :loading="loading"
+              :clearable="!loading"
+              :error="touched && !validateDept(searchQuery)"
+              :error-messages="touched && !validateDept(searchQuery) ? ['Please enter a 2–4 letter code'] : []"
               @keyup.enter="searchCourses"
               @click:append-inner="searchCourses"
-              :loading="loading"
-              :error-messages="message && !courses.length && !loading ? [message] : []"
-              clearable
             />
+            <v-btn
+              class="mt-2"
+              color="primary"
+              :loading="loading"
+              :disabled="loading"
+              @click="searchCourses"
+            >
+              Search
+            </v-btn>
           </v-card-text>
         </v-card>
       </v-col>
@@ -78,6 +79,7 @@ const searchCourses = async () => {
       <v-col cols="12">
         <p class="text-subtitle-1 text-center">{{ message }}</p>
       </v-col>
+
       <v-col
         v-for="course in courses"
         :key="course.id"
@@ -85,31 +87,14 @@ const searchCourses = async () => {
         md="6"
         lg="4"
       >
-        <!-- Course Card Placeholder -->
         <v-card elevation="2" class="h-100">
           <v-card-title>
-            {{ course.department }} {{ course.number }} - {{ course.title }}
+            {{ course.department }} {{ course.number }} — {{ course.title }}
           </v-card-title>
           <v-card-text>
-            <v-chip small color="primary" class="mr-2">
-              {{ course.credits }} credits
-            </v-chip>
-            <p class="mt-2 mb-0">Instructor: {{ course.instructor }}</p>
+            <p>{{ course.description }}</p>
           </v-card-text>
         </v-card>
-      </v-col>
-    </v-row>
-
-    <!-- Empty State -->
-    <v-row v-else-if="message && !loading" class="mt-8">
-      <v-col cols="12" class="text-center">
-        <v-icon size="64" color="grey-lighten-1" class="mb-4">
-          mdi-magnify
-        </v-icon>
-        <p class="text-h6 text-grey-darken-1">{{ message }}</p>
-        <p class="text-body-2 text-grey">
-          Try searching for CS, MATH, or ENG
-        </p>
       </v-col>
     </v-row>
   </v-container>
