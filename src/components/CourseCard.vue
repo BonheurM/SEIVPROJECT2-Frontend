@@ -1,5 +1,6 @@
-&lt;script setup&gt;
-import { computed } from 'vue';
+<script setup>
+import { computed, ref } from 'vue';
+import CourseDetailModal from './CourseDetailModal.vue';
 
 const props = defineProps({
   course: {
@@ -8,79 +9,90 @@ const props = defineProps({
   },
 });
 
-const enrollmentColor = computed(() => {
-  if (!props.course.enrollment) return 'grey';
-  const ratio = props.course.enrollment.current / props.course.enrollment.capacity;
-  if (ratio >= 0.9) return 'error';
-  if (ratio >= 0.7) return 'warning';
+const showDetails = ref(false);
+
+const levelColor = computed(() => {
+  if (props.course.level >= 400) return 'error';
+  if (props.course.level >= 300) return 'warning';
+  if (props.course.level >= 200) return 'info';
   return 'success';
 });
-&lt;/script&gt;
 
-&lt;template&gt;
-  &lt;v-card elevation="2" class="h-100 course-card"&gt;
-    &lt;v-card-title class="d-flex align-center"&gt;
-      &lt;span class="text-h6 text-primary"&gt;
-        {{ course.department }} {{ course.number }}
-      &lt;/span&gt;
-      &lt;v-spacer /&gt;
-      &lt;v-chip
-        v-if="course.enrollment"
-        :color="enrollmentColor"
+const levelText = computed(() => {
+  if (props.course.level >= 400) return 'Graduate';
+  if (props.course.level >= 300) return 'Upper Division';
+  if (props.course.level >= 200) return 'Intermediate';
+  if (props.course.level >= 100) return 'Introductory';
+  return 'Basic';
+});
+</script>
+
+<template>
+  <v-card 
+    elevation="2" 
+    class="h-100 course-card" 
+    @click="showDetails = true"
+    style="cursor: pointer;"
+  >
+    <v-card-title class="d-flex align-center">
+      <span class="text-h6 text-primary">
+        {{ course.dept }} {{ course.courseNumber }}
+      </span>
+      <v-spacer />
+      <v-chip
+        :color="levelColor"
         size="small"
         class="ml-2"
-      &gt;
-        {{ course.enrollment.current }}/{{ course.enrollment.capacity }}
-      &lt;/v-chip&gt;
-    &lt;/v-card-title&gt;
+      >
+        {{ levelText }}
+      </v-chip>
+    </v-card-title>
     
-    &lt;v-card-subtitle class="text-primary-darken-1"&gt;
-      {{ course.title }}
-    &lt;/v-card-subtitle&gt;
+    <v-card-subtitle class="text-primary-darken-1">
+      {{ course.name }}
+    </v-card-subtitle>
 
-    &lt;v-card-text&gt;
-      &lt;p class="mb-2"&gt;{{ course.description }}&lt;/p&gt;
+    <v-card-text>
+      <p class="mb-2 text-truncate" v-if="course.description">{{ course.description }}</p>
+      <p class="mb-2 text-grey" v-else>No description available</p>
       
-      &lt;v-row dense class="mt-2"&gt;
-        &lt;v-col cols="12" sm="6"&gt;
-          &lt;div class="text-subtitle-2"&gt;Instructor&lt;/div&gt;
-          &lt;div&gt;{{ course.instructor }}&lt;/div&gt;
-          &lt;div class="text-caption"&gt;
-            &lt;a :href="'mailto:' + course.instructorEmail"&gt;{{ course.instructorEmail }}&lt;/a&gt;
-          &lt;/div&gt;
-        &lt;/v-col&gt;
-        
-        &lt;v-col cols="12" sm="6"&gt;
-          &lt;div class="text-subtitle-2"&gt;Schedule&lt;/div&gt;
-          &lt;div v-if="course.schedule"&gt;
-            {{ course.schedule.days }} {{ course.schedule.time }}
-            &lt;div class="text-caption"&gt;{{ course.schedule.location }}&lt;/div&gt;
-          &lt;/div&gt;
-        &lt;/v-col&gt;
-      &lt;/v-row&gt;
+      <v-row dense class="mt-2">
+        <v-col cols="auto">
+          <v-chip size="small" color="primary" class="mr-2">
+            {{ course.hours }} hours
+          </v-chip>
+        </v-col>
+        <v-col cols="auto">
+          <v-chip size="small" color="secondary">
+            Level {{ course.level }}
+          </v-chip>
+        </v-col>
+      </v-row>
+    </v-card-text>
+  </v-card>
+  
+  <CourseDetailModal
+    v-model="showDetails"
+    :course="course"
+  />
+</template>
 
-      &lt;v-row dense class="mt-2"&gt;
-        &lt;v-col cols="auto"&gt;
-          &lt;v-chip size="small" color="primary" class="mr-2"&gt;
-            {{ course.credits }} credits
-          &lt;/v-chip&gt;
-        &lt;/v-col&gt;
-        &lt;v-col cols="auto" v-if="course.prerequisites?.length"&gt;
-          &lt;v-chip size="small" color="warning"&gt;
-            Has prerequisites
-          &lt;/v-chip&gt;
-        &lt;/v-col&gt;
-      &lt;/v-row&gt;
-    &lt;/v-card-text&gt;
-  &lt;/v-card&gt;
-&lt;/template&gt;
-
-&lt;style scoped&gt;
+<style scoped>
 .course-card {
-  transition: transform 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+  min-height: 200px;
 }
 
 .course-card:hover {
   transform: translateY(-4px);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
 }
-&lt;/style&gt;
+
+.text-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+</style>

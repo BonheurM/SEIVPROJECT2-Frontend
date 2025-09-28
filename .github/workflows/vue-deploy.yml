@@ -1,6 +1,5 @@
-name: Deploy dev to AWS
+name: Frontend Deploy (Project 2 - Team 2)
 
-#turn off deploy to AWS
 on:
   pull_request:
     types: [closed]
@@ -9,6 +8,7 @@ on:
 
 jobs:
   aws-deploy:
+    if: github.event.pull_request.merged == true
     runs-on: ubuntu-latest
 
     steps:
@@ -17,11 +17,10 @@ jobs:
           ref: dev
       - uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version: 18
       
       - run: npm install
       - run: npm run build
-      - run: npm run bundle
 
       - name: Deploy to Server
         uses: easingthemes/ssh-deploy@main
@@ -29,6 +28,6 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
           ARGS: "-rltgoDzvO --delete"
           SOURCE: "dist/"
-          REMOTE_HOST: "tutorial.eaglesoftwareteam.com"
+          REMOTE_HOST: "project2.eaglesoftwareteam.com"
           REMOTE_USER: ubuntu
-          TARGET: "/var/www/html/tutorial-frontend-vue3-simple"
+          TARGET: "/var/www/html/2025/project2/t2"
