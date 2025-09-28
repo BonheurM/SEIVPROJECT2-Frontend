@@ -20,6 +20,12 @@ jobs:
           node-version: 18
       
       - run: npm install
+      
+      # Set production API URL
+      - name: Set production environment
+        run: |
+          echo "VITE_API_BASE=https://project2.eaglesoftwareteam.com/course-t2" > .env.production
+          
       - run: npm run build
 
       - name: Deploy to Server
