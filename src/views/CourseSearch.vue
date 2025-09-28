@@ -1,6 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import CourseServices from "../services/courseServices";
+import CourseCard from "../components/CourseCard.vue";
 
 const searchQuery = ref("");
 const courses = ref([]);
@@ -87,14 +88,20 @@ const searchCourses = async () => {
         md="6"
         lg="4"
       >
-        <v-card elevation="2" class="h-100">
-          <v-card-title>
-            {{ course.department }} {{ course.number }} — {{ course.title }}
-          </v-card-title>
-          <v-card-text>
-            <p>{{ course.description }}</p>
-          </v-card-text>
-        </v-card>
+        <CourseCard :course="course" />
+      </v-col>
+    </v-row>
+
+    <!-- Empty State -->
+    <v-row v-else-if="message && !loading && touched" class="mt-8">
+      <v-col cols="12" class="text-center">
+        <v-icon size="64" color="grey-lighten-1" class="mb-4">
+          mdi-magnify
+        </v-icon>
+        <p class="text-h6 text-grey-darken-1">{{ message }}</p>
+        <p class="text-body-2 text-grey">
+          Try searching for CS, MATH, or ENG
+        </p>
       </v-col>
     </v-row>
   </v-container>

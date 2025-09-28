@@ -1,4 +1,5 @@
 import apiClient from "./services"; // your axios instance with baseURL & timeout
+import { USE_MOCK_DATA, mockCourses, simulateDelay } from "./mockData";
 
 class ValidationError extends Error {
   constructor(message) {
@@ -27,6 +28,14 @@ export default {
       const department = assertDept(deptCode);
       console.log('Searching for department:', department);
       
+      // Use mock data if enabled or if backend fails
+      if (USE_MOCK_DATA) {
+        await simulateDelay(300); // Simulate network delay
+        const courses = mockCourses[department] || [];
+        console.log('Using mock data:', courses);
+        return courses;
+      }
+      
       const response = await apiClient.get("/api/courses", { 
         params: { department }
       });
@@ -53,6 +62,14 @@ export default {
       
       if (error.response?.status === 404) {
         return []; // Return empty array for no results
+      }
+      
+      // Fallback to mock data if API is unavailable
+      if (error.message.includes('Network') || error.code === 'ECONNABORTED') {
+        console.warn('API unavailable, falling back to mock data');
+        const department = assertDept(deptCode);
+        await simulateDelay(300);
+        return mockCourses[department] || [];
       }
       
       throw new Error(error.response?.data?.message || 'Failed to search courses. Please try again.');
