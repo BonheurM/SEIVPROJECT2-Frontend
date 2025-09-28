@@ -1,8 +1,9 @@
 <script setup>
 import ocLogo from "/oc-logo-white.png";
 import { ref, onMounted } from "vue";
+import BackendStatus from "./BackendStatus.vue";
 
-const title = ref("Course Listing System");
+const title = ref("Oklahoma Christian University Course Catalog");
 
 const name = ref("");
 const logoURL = ref("");
@@ -16,7 +17,7 @@ onMounted(() => {
 <template>
   <div>
     <v-app-bar app>
-      <router-link :to="{ name: 'tutorials' }">
+      <router-link :to="{ name: 'home' }">
         <v-img
           class="mx-2"
           :src="logoURL"
@@ -29,14 +30,12 @@ onMounted(() => {
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
+      
+      <!-- Backend Status Indicator -->
+      <BackendStatus class="mr-4" />
+      
       <div>
-        <!-- New Course Search Link -->
-        <v-btn class="mx-2" :to="{ name: 'courses' }" color="primary">
-          Course Search
-        </v-btn>
-        <!-- Keep tutorial links temporarily -->
-        <v-btn class="mx-2" :to="{ name: 'tutorials' }" text> Tutorials </v-btn>
-        <v-btn class="mx-2" :to="{ name: 'add' }" text> Add Tutorial </v-btn>
+        <!-- Department filter could go here in the future -->
       </div>
 
     </v-app-bar>

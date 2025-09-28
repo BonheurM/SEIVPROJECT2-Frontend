@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "cross-env APP_ENV=development vite",
     "build": "cross-env APP_ENV=production vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "bundle": "npm run build"
   },
   "dependencies": {
     "@mdi/font": "^7.0.96",
