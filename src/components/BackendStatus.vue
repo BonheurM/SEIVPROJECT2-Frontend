@@ -1,8 +1,6 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
-import axios from 'axios';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+import apiClient from '@/services/services';
 
 const status = ref('checking');
 const lastChecked = ref(null);
@@ -37,7 +35,7 @@ async function checkStatus() {
   
   try {
     // Try main API endpoint first
-    const response = await axios.get(`${API_BASE}/api/courses`, {
+    const response = await apiClient.get('/api/courses', {
       params: { department: 'CS' },
       timeout: 2000
     });
