@@ -26,6 +26,8 @@ const handleCourseCreated = async (newCourse) => {
     alert("Failed to add course");
   }
 };
+=======
+import apiClient from "@/services/services";
 
 const searchQuery = ref("");
 const courses = ref([]);
@@ -61,11 +63,8 @@ const searchCourses = async () => {
       params.maxLevel = selectedLevel.value === "400" ? "999" : String(parseInt(selectedLevel.value) + 99);
     }
 
-    const response = await fetch(
-      `http://localhost:8080/api/courses?${new URLSearchParams(params)}`
-    );
-    const data = await response.json();
-    courses.value = data;
+    const response = await apiClient.get("/api/courses", { params });
+    courses.value = response.data;
   } catch (error) {
     console.error("Error searching courses:", error);
     courses.value = [];
@@ -91,9 +90,8 @@ watch([searchQuery, selectedDepartment, selectedLevel], () => {
 
 const loadDepartments = async () => {
   try {
-    const response = await fetch("http://localhost:8080/api/courses/departments");
-    const data = await response.json();
-    departments.value = data.map(dept => ({ title: dept, value: dept }));
+    const response = await apiClient.get("/api/courses/departments");
+    departments.value = response.data.map(dept => ({ title: dept, value: dept }));
     departments.value.unshift({ title: "All Departments", value: "" });
   } catch (error) {
     console.error("Error loading departments:", error);
