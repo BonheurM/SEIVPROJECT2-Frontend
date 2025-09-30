@@ -2,6 +2,30 @@
 import { ref, onMounted, computed, watch } from "vue";
 import CourseServices from "../services/courseServices";
 import CourseCard from "../components/CourseCard.vue";
+import AddCourseModal from "../components/AddCourseModal.vue";
+const showAddCourse = ref(false);
+
+// Handler for when a new course is created
+const handleCourseCreated = async (newCourse) => {
+  // Map form fields to backend fields
+  const payload = {
+    name: newCourse.title,
+    courseNumber: newCourse.courseNumber,
+    hours: newCourse.credits,
+    level: newCourse.level,
+    description: newCourse.description
+  };
+  try {
+    await fetch("http://localhost:8080/api/courses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    searchCourses(); // Refresh course list
+  } catch (e) {
+    alert("Failed to add course");
+  }
+};
 
 const searchQuery = ref("");
 const courses = ref([]);
@@ -95,14 +119,25 @@ const hasActiveFilters = computed(() => {
 <template>
   <v-container fluid>
     <!-- Header Section -->
+
     <v-row>
+      <v-col cols="12" class="d-flex align-center justify-center position-relative">
+        <h1 class="text-h3 text-center text-primary mb-2 flex-grow-1">Course Catalog</h1>
+        <v-btn color="primary" class="ml-auto" @click="showAddCourse = true">
+          <v-icon left>mdi-plus</v-icon>
+          Add Course
+        </v-btn>
+      </v-col>
       <v-col cols="12">
-        <h1 class="text-h3 text-center text-primary mb-2">Course Catalog</h1>
         <p class="text-center text-subtitle-1 text-grey-darken-1">
           Browse Oklahoma Christian University's complete course offerings
         </p>
       </v-col>
     </v-row>
+  <AddCourseModal
+    v-model:show="showAddCourse"
+    @course-created="handleCourseCreated"
+  />
 
     <!-- Search and Filter Section -->
     <v-row class="my-4">
