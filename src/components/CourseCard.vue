@@ -25,6 +25,8 @@ const levelText = computed(() => {
   if (props.course.level >= 100) return 'Introductory';
   return 'Basic';
 });
+
+
 </script>
 
 <template>
