@@ -26,7 +26,7 @@ const handleCourseCreated = async (newCourse) => {
     alert("Failed to add course");
   }
 };
-=======
+
 import apiClient from "@/services/services";
 
 const searchQuery = ref("");
