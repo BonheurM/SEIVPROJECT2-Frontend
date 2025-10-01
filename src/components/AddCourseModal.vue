@@ -4,11 +4,12 @@
       <v-card-title>Add New Course</v-card-title>
       <v-card-text>
         <v-form ref="form" v-model="valid">
-          <v-text-field v-model="course.title" label="Title" :rules="[v => !!v || 'Title is required']" required />
+          <v-text-field v-model="course.name" label="Course Name" :rules="[v => !!v || 'Name is required']" required />
+          <v-text-field v-model="course.dept" label="Department" :rules="[v => !!v || 'Department is required']" required />
           <v-text-field v-model="course.courseNumber" label="Course Number" :rules="[v => !!v || 'Course Number is required']" required />
-          <v-text-field v-model="course.credits" label="Credits" type="number" :rules="[v => !!v || 'Credits are required']" required />
+          <v-text-field v-model="course.hours" label="Credit Hours" type="number" :rules="[v => !!v || 'Hours are required']" required />
           <v-text-field v-model="course.level" label="Level" type="number" :rules="[v => !!v || 'Level is required']" required />
-          <v-textarea v-model="course.description" label="Description" :rules="[v => !!v || 'Description is required']" required />
+          <v-textarea v-model="course.description" label="Description" />
         </v-form>
       </v-card-text>
       <v-card-actions>
@@ -31,9 +32,10 @@ export default {
     return {
       valid: false,
       course: {
-        title: '',
+        name: '',
+        dept: '',
         courseNumber: '',
-        credits: '',
+        hours: '',
         level: '',
         description: ''
       }
@@ -59,9 +61,10 @@ export default {
     resetForm() {
       this.valid = false;
       this.course = {
-        title: '',
+        name: '',
+        dept: '',
         courseNumber: '',
-        credits: '',
+        hours: '',
         level: '',
         description: ''
       };

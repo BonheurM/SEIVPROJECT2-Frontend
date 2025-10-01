@@ -14,19 +14,24 @@ const courseToDelete = ref(null);
 const handleCourseCreated = async (newCourse) => {
   // Map form fields to backend fields
   const payload = {
-    name: newCourse.title,
+    dept: newCourse.dept || newCourse.department || 'DEPT', // Add dept field
+    name: newCourse.name || newCourse.title,
     courseNumber: newCourse.courseNumber,
-    hours: newCourse.credits,
-    level: newCourse.level,
-    description: newCourse.description
+    hours: parseInt(newCourse.hours || newCourse.credits || 0),
+    level: parseInt(newCourse.level || 0),
+    description: newCourse.description || ''
   };
+  
+  console.log('Creating course with payload:', payload);
+  
   try {
-    await apiClient.post("/api/courses", payload);
+    const response = await apiClient.post("/api/courses", payload);
+    console.log('Course created:', response.data);
     searchCourses(); // Refresh course list
     showAddCourse.value = false; // Close the modal
   } catch (e) {
     console.error("Failed to add course:", e);
-    alert("Failed to add course");
+    alert(`Failed to add course: ${e.message}`);
   }
 };
 
