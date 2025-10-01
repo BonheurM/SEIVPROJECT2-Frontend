@@ -3,7 +3,12 @@ import { ref, onMounted, computed, watch } from "vue";
 import CourseServices from "../services/courseServices";
 import CourseCard from "../components/CourseCard.vue";
 import AddCourseModal from "../components/AddCourseModal.vue";
+import EditCourseModal from "../components/EditCourseModal.vue";
 const showAddCourse = ref(false);
+const showEditCourse = ref(false);
+const courseToEdit = ref(null);
+const showDeleteConfirm = ref(false);
+const courseToDelete = ref(null);
 
 // Handler for when a new course is created
 const handleCourseCreated = async (newCourse) => {
@@ -22,6 +27,45 @@ const handleCourseCreated = async (newCourse) => {
   } catch (e) {
     console.error("Failed to add course:", e);
     alert("Failed to add course");
+  }
+};
+
+// Handler for editing a course
+const handleEditCourse = (course) => {
+  courseToEdit.value = course;
+  showEditCourse.value = true;
+};
+
+// Handler for updating a course
+const handleCourseUpdated = async (updatedCourse) => {
+  try {
+    await apiClient.put(`/api/courses/${updatedCourse.id}`, updatedCourse);
+    searchCourses(); // Refresh course list
+    showEditCourse.value = false;
+  } catch (e) {
+    console.error("Failed to update course:", e);
+    alert("Failed to update course");
+  }
+};
+
+// Handler for deleting a course
+const handleDeleteCourse = (course) => {
+  courseToDelete.value = course;
+  showDeleteConfirm.value = true;
+};
+
+// Confirm delete
+const confirmDelete = async () => {
+  if (!courseToDelete.value) return;
+  
+  try {
+    await apiClient.delete(`/api/courses/${courseToDelete.value.id}`);
+    searchCourses(); // Refresh course list
+    showDeleteConfirm.value = false;
+    courseToDelete.value = null;
+  } catch (e) {
+    console.error("Failed to delete course:", e);
+    alert("Failed to delete course");
   }
 };
 
@@ -113,19 +157,11 @@ const hasActiveFilters = computed(() => {
 </script>
 
 <template>
-  <v-container fluid>
-    <!-- Header Section -->
-
-    <v-row>
-      <v-col cols="12" class="d-flex align-center justify-center position-relative">
-        <h1 class="text-h3 text-center text-primary mb-2 flex-grow-1">Course Catalog</h1>
-        <v-btn color="primary" class="ml-auto" @click="showAddCourse = true">
-          <v-icon left>mdi-plus</v-icon>
-          Add Course
-        </v-btn>
-      </v-col>
+  <v-container>
+    <v-row class="mb-4">
       <v-col cols="12">
-        <p class="text-center text-subtitle-1 text-grey-darken-1">
+        <h1 class="text-h4 text-center mb-2">Course Catalog</h1>
+        <p class="text-subtitle-1 text-center text-grey-darken-1">
           Browse Oklahoma Christian University's complete course offerings
         </p>
       </v-col>
@@ -134,64 +170,92 @@ const hasActiveFilters = computed(() => {
     v-model:show="showAddCourse"
     @course-created="handleCourseCreated"
   />
+  
+  <EditCourseModal
+    v-model:show="showEditCourse"
+    :course="courseToEdit"
+    @course-updated="handleCourseUpdated"
+  />
+  
+  <!-- Delete Confirmation Dialog -->
+  <v-dialog v-model="showDeleteConfirm" max-width="500">
+    <v-card>
+      <v-card-title class="text-h5">Delete Course</v-card-title>
+      <v-card-text>
+        Are you sure you want to delete this course?
+        <div class="mt-3 font-weight-bold" v-if="courseToDelete">
+          {{ courseToDelete.dept }} {{ courseToDelete.courseNumber }} - {{ courseToDelete.name }}
+        </div>
+        <div class="text-error mt-2">This action cannot be undone.</div>
+      </v-card-text>
+      <v-card-actions>
+        <v-spacer />
+        <v-btn text @click="showDeleteConfirm = false">Cancel</v-btn>
+        <v-btn color="error" @click="confirmDelete">Delete</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+    <!-- Add Course Button -->
+    <v-row class="mb-4">
+      <v-col cols="12" class="text-center">
+        <v-btn 
+          color="primary" 
+          @click="showAddCourse = true"
+          class="mb-4"
+        >
+          <v-icon left>mdi-plus</v-icon>
+          Add New Course
+        </v-btn>
+      </v-col>
+    </v-row>
 
     <!-- Search and Filter Section -->
-    <v-row class="my-4">
-      <v-col cols="12" lg="10" class="mx-auto">
-        <v-card class="pa-4" elevation="2">
-          <v-row>
-            <v-col cols="12" md="4">
-              <v-text-field
-                v-model="searchQuery"
-                label="Search courses..."
-                variant="outlined"
-                prepend-inner-icon="mdi-magnify"
-                clearable
-                placeholder="Name, number, or keyword"
-                hide-details
-              />
-            </v-col>
-            <v-col cols="12" md="3">
-              <v-select
-                v-model="selectedDepartment"
-                :items="departments"
-                label="Department"
-                variant="outlined"
-                prepend-inner-icon="mdi-school"
-                hide-details
-              />
-            </v-col>
-            <v-col cols="12" md="3">
-              <v-select
-                v-model="selectedLevel"
-                :items="levelOptions"
-                label="Course Level"
-                variant="outlined"
-                prepend-inner-icon="mdi-stairs"
-                hide-details
-              />
-            </v-col>
-            <v-col cols="12" md="2" class="d-flex align-center">
-              <v-btn
-                block
-                color="grey"
-                variant="outlined"
-                @click="clearFilters"
-                :disabled="!hasActiveFilters"
-              >
-                <v-icon start>mdi-filter-remove</v-icon>
-                Clear
-              </v-btn>
-            </v-col>
-          </v-row>
-        </v-card>
+    <v-row class="mb-4">
+      <v-col cols="12" md="4">
+        <v-text-field
+          v-model="searchQuery"
+          label="Search courses..."
+          variant="outlined"
+          density="compact"
+          prepend-inner-icon="mdi-magnify"
+          clearable
+        />
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="selectedDepartment"
+          :items="departments"
+          label="Department"
+          variant="outlined"
+          density="compact"
+        />
+      </v-col>
+      <v-col cols="12" md="3">
+        <v-select
+          v-model="selectedLevel"
+          :items="levelOptions"
+          label="Course Level"
+          variant="outlined"
+          density="compact"
+        />
+      </v-col>
+      <v-col cols="12" md="2">
+        <v-btn
+          block
+          variant="outlined"
+          @click="clearFilters"
+          :disabled="!hasActiveFilters"
+        >
+          Clear Filters
+        </v-btn>
       </v-col>
     </v-row>
 
     <!-- Course Count -->
     <v-row v-if="!loading">
-      <v-col cols="12" class="text-center">
-        <v-chip color="primary" variant="flat">
+      <v-col cols="12" class="text-center mb-4">
+        <v-chip color="primary">
           {{ courses.length }} {{ courses.length === 1 ? 'course' : 'courses' }} found
         </v-chip>
       </v-col>
@@ -220,7 +284,11 @@ const hasActiveFilters = computed(() => {
         md="4"
         lg="3"
       >
-        <CourseCard :course="course" />
+        <CourseCard 
+          :course="course" 
+          @edit="handleEditCourse"
+          @delete="handleDeleteCourse"
+        />
       </v-col>
     </v-row>
 
@@ -240,7 +308,5 @@ const hasActiveFilters = computed(() => {
 </template>
 
 <style scoped>
-:deep(.v-field__prepend-inner) {
-  padding-top: 0 !important;
-}
+/* Keep styling minimal and clean */
 </style>

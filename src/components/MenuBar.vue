@@ -17,16 +17,16 @@ onMounted(() => {
 <template>
   <div>
     <v-app-bar app>
-      <router-link :to="{ name: 'home' }">
+      <router-link :to="{ name: 'home' }" class="d-flex align-center text-decoration-none">
         <v-img
-          class="mx-2"
+          class="mx-3"
           :src="logoURL"
-          height="50"
-          width="50"
+          height="45"
+          width="45"
           contain
         ></v-img>
       </router-link>
-      <v-toolbar-title class="title">
+      <v-toolbar-title class="app-title">
         {{ title }}
       </v-toolbar-title>
       <v-spacer></v-spacer>
@@ -34,10 +34,6 @@ onMounted(() => {
       <!-- Backend Status Indicator -->
       <BackendStatus class="mr-4" />
       
-      <div>
-        <!-- Department filter could go here in the future -->
-      </div>
-
     </v-app-bar>
   </div>
 </template>
