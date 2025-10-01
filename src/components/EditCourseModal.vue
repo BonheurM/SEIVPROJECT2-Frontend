@@ -107,17 +107,30 @@ const levelRules = [
 // Watch for course prop changes
 watch(() => props.course, (newCourse) => {
   if (newCourse) {
+    console.log('EditCourseModal - Loading course:', newCourse);
     editedCourse.value = { ...newCourse };
     // Form should be valid when pre-populated with existing data
     isFormValid.value = true;
+    console.log('EditCourseModal - editedCourse after load:', editedCourse.value);
   }
-}, { immediate: true });
+}, { immediate: true, deep: true });
 
 const onSave = async () => {
   if (!isFormValid.value) {
     console.error('Form is not valid');
     return;
   }
+  
+  // Debug: Log what we're about to save
+  console.log('EditCourseModal - About to save:', {
+    id: editedCourse.value.id,
+    dept: editedCourse.value.dept,
+    courseNumber: editedCourse.value.courseNumber,
+    name: editedCourse.value.name,
+    level: editedCourse.value.level,
+    hours: editedCourse.value.hours,
+    description: editedCourse.value.description
+  });
   
   loading.value = true;
   try {

@@ -44,7 +44,17 @@ const handleEditCourse = (course) => {
 // Handler for updating a course
 const handleCourseUpdated = async (updatedCourse) => {
   try {
-    console.log('Updating course:', updatedCourse);
+    // Log exactly what we're sending
+    console.log('Updating course with full data:', {
+      id: updatedCourse.id,
+      dept: updatedCourse.dept,
+      courseNumber: updatedCourse.courseNumber,
+      name: updatedCourse.name,
+      level: updatedCourse.level,
+      hours: updatedCourse.hours,
+      description: updatedCourse.description
+    });
+    
     const response = await apiClient.put(`/api/courses/${updatedCourse.id}`, updatedCourse);
     console.log('Update response:', response);
     
