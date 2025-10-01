@@ -3,53 +3,61 @@
     <v-card>
       <v-card-title>Edit Course</v-card-title>
       <v-card-text>
-        <v-form ref="form" v-model="valid">
+        <v-form v-model="isFormValid">
           <v-text-field 
             v-model="editedCourse.name" 
             label="Course Name" 
-            :rules="[v => !!v || 'Name is required']" 
-            required 
+            :rules="nameRules" 
+            variant="outlined"
+            density="compact"
           />
           <v-text-field 
             v-model="editedCourse.courseNumber" 
             label="Course Number" 
-            :rules="[v => !!v || 'Course Number is required']" 
-            required 
+            :rules="courseNumberRules" 
+            variant="outlined"
+            density="compact"
           />
           <v-text-field 
             v-model="editedCourse.dept" 
             label="Department" 
-            :rules="[v => !!v || 'Department is required']" 
-            required 
+            :rules="deptRules" 
+            variant="outlined"
+            density="compact"
           />
           <v-text-field 
             v-model.number="editedCourse.hours" 
             label="Credit Hours" 
             type="number" 
-            :rules="[v => !!v || 'Hours are required', v => v > 0 || 'Hours must be positive']" 
-            required 
+            :rules="hoursRules" 
+            variant="outlined"
+            density="compact"
           />
           <v-text-field 
             v-model.number="editedCourse.level" 
             label="Level" 
             type="number" 
-            :rules="[v => !!v || 'Level is required', v => v >= 0 || 'Level must be non-negative']" 
-            required 
+            :rules="levelRules" 
+            variant="outlined"
+            density="compact"
           />
           <v-textarea 
             v-model="editedCourse.description" 
             label="Description" 
             rows="3"
+            variant="outlined"
+            density="compact"
           />
         </v-form>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn text @click="onCancel">Cancel</v-btn>
+        <v-btn variant="text" @click="onCancel">Cancel</v-btn>
         <v-btn 
           color="primary" 
+          variant="elevated"
           @click="onSave" 
-          :disabled="!valid"
+          :disabled="!isFormValid || loading"
           :loading="loading"
         >
           Save Changes
@@ -59,47 +67,72 @@
   </v-dialog>
 </template>
 
-<script>
-export default {
-  name: 'EditCourseModal',
-  props: {
-    show: Boolean,
-    course: Object
-  },
-  emits: ['update:show', 'course-updated'],
-  data() {
-    return {
-      valid: false,
-      loading: false,
-      editedCourse: {}
-    };
-  },
-  watch: {
-    course: {
-      immediate: true,
-      handler(newCourse) {
-        if (newCourse) {
-          this.editedCourse = { ...newCourse };
-        }
-      }
-    }
-  },
-  methods: {
-    async onSave() {
-      if (!this.$refs.form.validate()) return;
-      
-      this.loading = true;
-      try {
-        this.$emit('course-updated', this.editedCourse);
-        this.$emit('update:show', false);
-      } finally {
-        this.loading = false;
-      }
-    },
-    onCancel() {
-      this.$emit('update:show', false);
-      this.editedCourse = { ...this.course };
-    }
+<script setup>
+import { ref, watch, computed } from 'vue';
+
+const props = defineProps({
+  show: Boolean,
+  course: Object
+});
+
+const emit = defineEmits(['update:show', 'course-updated']);
+
+const isFormValid = ref(true);
+const loading = ref(false);
+const editedCourse = ref({});
+
+// Validation rules
+const nameRules = [
+  v => !!v || 'Name is required'
+];
+
+const courseNumberRules = [
+  v => !!v || 'Course Number is required'
+];
+
+const deptRules = [
+  v => !!v || 'Department is required'
+];
+
+const hoursRules = [
+  v => v != null && v !== '' || 'Hours are required',
+  v => v > 0 || 'Hours must be positive'
+];
+
+const levelRules = [
+  v => v != null && v !== '' || 'Level is required',
+  v => v >= 0 || 'Level must be non-negative'
+];
+
+// Watch for course prop changes
+watch(() => props.course, (newCourse) => {
+  if (newCourse) {
+    editedCourse.value = { ...newCourse };
+    // Form should be valid when pre-populated with existing data
+    isFormValid.value = true;
+  }
+}, { immediate: true });
+
+const onSave = async () => {
+  if (!isFormValid.value) {
+    console.error('Form is not valid');
+    return;
+  }
+  
+  loading.value = true;
+  try {
+    emit('course-updated', editedCourse.value);
+  } catch (error) {
+    console.error('Error saving course:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const onCancel = () => {
+  emit('update:show', false);
+  if (props.course) {
+    editedCourse.value = { ...props.course };
   }
 };
 </script>

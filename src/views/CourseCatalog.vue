@@ -39,12 +39,21 @@ const handleEditCourse = (course) => {
 // Handler for updating a course
 const handleCourseUpdated = async (updatedCourse) => {
   try {
-    await apiClient.put(`/api/courses/${updatedCourse.id}`, updatedCourse);
-    searchCourses(); // Refresh course list
-    showEditCourse.value = false;
+    console.log('Updating course:', updatedCourse);
+    const response = await apiClient.put(`/api/courses/${updatedCourse.id}`, updatedCourse);
+    console.log('Update response:', response);
+    
+    if (response.data && response.data.message) {
+      if (response.data.message.includes('successfully')) {
+        searchCourses(); // Refresh course list
+        showEditCourse.value = false;
+      } else {
+        throw new Error(response.data.message);
+      }
+    }
   } catch (e) {
     console.error("Failed to update course:", e);
-    alert("Failed to update course");
+    alert(`Failed to update course: ${e.response?.data?.message || e.message}`);
   }
 };
 
