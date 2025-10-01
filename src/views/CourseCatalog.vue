@@ -16,13 +16,11 @@ const handleCourseCreated = async (newCourse) => {
     description: newCourse.description
   };
   try {
-    await fetch("http://localhost:8080/api/courses", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    await apiClient.post("/api/courses", payload);
     searchCourses(); // Refresh course list
+    showAddCourse.value = false; // Close the modal
   } catch (e) {
+    console.error("Failed to add course:", e);
     alert("Failed to add course");
   }
 };
