@@ -3,7 +3,7 @@
     <v-card>
       <v-card-title>Edit Course</v-card-title>
       <v-card-text>
-        <v-form v-model="isFormValid">
+        <v-form ref="form">
           <v-text-field 
             v-model="editedCourse.name" 
             label="Course Name" 
@@ -57,7 +57,7 @@
           color="primary" 
           variant="elevated"
           @click="onSave" 
-          :disabled="!isFormValid || loading"
+          :disabled="loading"
           :loading="loading"
         >
           Save Changes
@@ -77,7 +77,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:show', 'course-updated']);
 
-const isFormValid = ref(true);
+const form = ref(null);
 const loading = ref(false);
 const editedCourse = ref({});
 
@@ -108,15 +108,17 @@ const levelRules = [
 watch(() => props.course, (newCourse) => {
   if (newCourse) {
     editedCourse.value = { ...newCourse };
-    // Form should be valid when pre-populated with existing data
-    isFormValid.value = true;
   }
 }, { immediate: true, deep: true });
 
 const onSave = async () => {
-  if (!isFormValid.value) {
-    console.error('Form is not valid');
-    return;
+  // Validate form
+  if (form.value) {
+    const { valid } = await form.value.validate();
+    if (!valid) {
+      console.error('Form validation failed');
+      return;
+    }
   }
   
   loading.value = true;
@@ -133,6 +135,10 @@ const onCancel = () => {
   emit('update:show', false);
   if (props.course) {
     editedCourse.value = { ...props.course };
+  }
+  // Reset form validation
+  if (form.value) {
+    form.value.resetValidation();
   }
 };
 </script>
