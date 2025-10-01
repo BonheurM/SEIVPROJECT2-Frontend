@@ -50,4 +50,10 @@ Thumbs.db
 .yarn-integrity
 
 # Documentation
-# Keep project documentation in version control
+# Keep only README.md in version control
+AC1_*.md
+API_INTEGRATION_GUIDE.md
+CLAUDE*.md
+github-workflow.md
+TEAM_TASKS_AC1.md
+claude-reminders.md
