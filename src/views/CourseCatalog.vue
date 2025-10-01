@@ -44,18 +44,20 @@ const handleEditCourse = (course) => {
 // Handler for updating a course
 const handleCourseUpdated = async (updatedCourse) => {
   try {
-    // Log exactly what we're sending
-    console.log('Updating course with full data:', {
+    // Ensure numeric fields are properly typed
+    const courseData = {
       id: updatedCourse.id,
       dept: updatedCourse.dept,
       courseNumber: updatedCourse.courseNumber,
       name: updatedCourse.name,
-      level: updatedCourse.level,
-      hours: updatedCourse.hours,
-      description: updatedCourse.description
-    });
+      level: parseInt(updatedCourse.level) || 0,
+      hours: parseInt(updatedCourse.hours) || 0,
+      description: updatedCourse.description || ''
+    };
     
-    const response = await apiClient.put(`/api/courses/${updatedCourse.id}`, updatedCourse);
+    console.log('Updating course with cleaned data:', courseData);
+    
+    const response = await apiClient.put(`/api/courses/${courseData.id}`, courseData);
     console.log('Update response:', response);
     
     if (response.data && response.data.message) {
