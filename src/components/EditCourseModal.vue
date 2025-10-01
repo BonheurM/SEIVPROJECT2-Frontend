@@ -3,25 +3,25 @@
     <v-card>
       <v-card-title>Edit Course</v-card-title>
       <v-card-text>
-        <v-form v-model="isFormValid">
+        <v-form ref="form">
           <v-text-field 
             v-model="editedCourse.name" 
             label="Course Name" 
-            :rules="nameRules" 
+            :rules="[v => !!v || 'Name is required']" 
             variant="outlined"
             density="compact"
           />
           <v-text-field 
             v-model="editedCourse.courseNumber" 
             label="Course Number" 
-            :rules="courseNumberRules" 
+            :rules="[v => !!v || 'Course Number is required']" 
             variant="outlined"
             density="compact"
           />
           <v-text-field 
             v-model="editedCourse.dept" 
             label="Department" 
-            :rules="deptRules" 
+            :rules="[v => !!v || 'Department is required']" 
             variant="outlined"
             density="compact"
           />
@@ -29,7 +29,10 @@
             v-model.number="editedCourse.hours" 
             label="Credit Hours" 
             type="number" 
-            :rules="hoursRules" 
+            :rules="[
+              v => v !== null && v !== '' && v !== undefined && !isNaN(v) || 'Hours are required',
+              v => Number(v) >= 0 || 'Hours must be non-negative'
+            ]" 
             variant="outlined"
             density="compact"
           />
@@ -37,7 +40,10 @@
             v-model.number="editedCourse.level" 
             label="Level" 
             type="number" 
-            :rules="levelRules" 
+            :rules="[
+              v => v !== null && v !== '' && v !== undefined && !isNaN(v) || 'Level is required',
+              v => Number(v) >= 0 || 'Level must be non-negative'
+            ]" 
             variant="outlined"
             density="compact"
           />
@@ -57,7 +63,6 @@
           color="primary" 
           variant="elevated"
           @click="onSave" 
-          :disabled="!isFormValid || loading"
           :loading="loading"
         >
           Save Changes
@@ -68,7 +73,7 @@
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue';
+import { ref, watch } from 'vue';
 
 const props = defineProps({
   show: Boolean,
@@ -77,46 +82,25 @@ const props = defineProps({
 
 const emit = defineEmits(['update:show', 'course-updated']);
 
-const isFormValid = ref(true);
+const form = ref(null);
 const loading = ref(false);
 const editedCourse = ref({});
-
-// Validation rules
-const nameRules = [
-  v => !!v || 'Name is required'
-];
-
-const courseNumberRules = [
-  v => !!v || 'Course Number is required'
-];
-
-const deptRules = [
-  v => !!v || 'Department is required'
-];
-
-const hoursRules = [
-  v => v != null && v !== '' || 'Hours are required',
-  v => v > 0 || 'Hours must be positive'
-];
-
-const levelRules = [
-  v => v != null && v !== '' || 'Level is required',
-  v => v >= 0 || 'Level must be non-negative'
-];
 
 // Watch for course prop changes
 watch(() => props.course, (newCourse) => {
   if (newCourse) {
     editedCourse.value = { ...newCourse };
-    // Form should be valid when pre-populated with existing data
-    isFormValid.value = true;
   }
 }, { immediate: true, deep: true });
 
 const onSave = async () => {
-  if (!isFormValid.value) {
-    console.error('Form is not valid');
-    return;
+  // Validate form
+  if (form.value) {
+    const { valid } = await form.value.validate();
+    if (!valid) {
+      console.error('Form validation failed');
+      return;
+    }
   }
   
   loading.value = true;
@@ -133,6 +117,10 @@ const onCancel = () => {
   emit('update:show', false);
   if (props.course) {
     editedCourse.value = { ...props.course };
+  }
+  // Reset form validation
+  if (form.value) {
+    form.value.resetValidation();
   }
 };
 </script>
