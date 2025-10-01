@@ -9,7 +9,10 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['edit', 'delete']);
+
 const showDetails = ref(false);
+const showMenu = ref(false);
 
 const levelColor = computed(() => {
   if (props.course.level >= 400) return 'error';
@@ -32,9 +35,8 @@ const levelText = computed(() => {
 <template>
   <v-card 
     elevation="2" 
-    class="h-100 course-card" 
+    class="h-100" 
     @click="showDetails = true"
-    style="cursor: pointer;"
   >
     <v-card-title class="d-flex align-center">
       <span class="text-h6 text-primary">
@@ -48,15 +50,44 @@ const levelText = computed(() => {
       >
         {{ levelText }}
       </v-chip>
+      <v-menu v-model="showMenu" :close-on-content-click="false">
+        <template v-slot:activator="{ props: menuProps }">
+          <v-btn
+            icon
+            variant="text"
+            size="small"
+            v-bind="menuProps"
+            @click.stop
+          >
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+        <v-list>
+          <v-list-item @click="emit('edit', course); showMenu = false">
+            <v-list-item-title>
+              <v-icon size="small" class="mr-2">mdi-pencil</v-icon>
+              Edit Course
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="emit('delete', course); showMenu = false" class="text-error">
+            <v-list-item-title>
+              <v-icon size="small" class="mr-2" color="error">mdi-delete</v-icon>
+              Delete Course
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </v-card-title>
     
-    <v-card-subtitle class="text-primary-darken-1">
+    <v-card-subtitle>
       {{ course.name }}
     </v-card-subtitle>
 
     <v-card-text>
-      <p class="mb-2 text-truncate" v-if="course.description">{{ course.description }}</p>
-      <p class="mb-2 text-grey" v-else>No description available</p>
+      <div class="mb-2">
+        <p v-if="course.description">{{ course.description }}</p>
+        <p v-else class="text-grey">No description available</p>
+      </div>
       
       <v-row dense class="mt-2">
         <v-col cols="auto">
@@ -80,21 +111,5 @@ const levelText = computed(() => {
 </template>
 
 <style scoped>
-.course-card {
-  transition: all 0.2s ease-in-out;
-  min-height: 200px;
-}
-
-.course-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-}
-
-.text-truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
+/* Keep styling minimal */
 </style>
